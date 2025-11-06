@@ -14,9 +14,17 @@ Extensions to Garry's Mod metatables.
 
 ## Overview
 
-DrGBase extends several Garry's Mod metatables with additional helper functions.
+DrGBase extends several Garry's Mod metatables with additional helper functions. These extensions add DrGBase-specific functionality like faction management, relationship handling, and utility methods.
 
-<!-- TODO: Document all metatable extensions -->
+### What Gets Extended
+
+- **Entity:** DrGBase-specific entity functions (factions, relationships, effects)
+- **NPC:** NPC-specific helpers (enhanced AI, detection, status checks)
+- **Player:** Player-specific utilities (inventory, stats, possession)
+- **PhysObj:** Physics object utilities (material checks, advanced manipulation)
+- **Vector:** Vector math extensions (angles, distance checks, transformations)
+
+All extensions are prefixed with `DrG_` or follow DrGBase naming conventions to avoid conflicts with other addons.
 
 ---
 

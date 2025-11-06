@@ -12,23 +12,29 @@ Global DrGBase functions and core utilities.
 ## DrGBase Global Functions
 
 ### Registration
-<!-- TODO: Document registration functions -->
-- `DrGBase.AddNextbot(ENT)` - Register a nextbot entity
-- `DrGBase.AddWeapon(SWEP)` - Register a weapon
-- `DrGBase.AddSpawner(ENT)` - Register a spawner
+
+Register DrGBase entities and weapons with the framework. These functions handle clientside/serverside inclusion and register entities in the spawn menu.
+
+- `DrGBase.AddNextbot(ENT)` - Register a nextbot entity (call at end of entity file)
+- `DrGBase.AddWeapon(SWEP)` - Register a weapon (call at end of weapon file)
+- `DrGBase.AddSpawner(ENT)` - Register a spawner entity
 
 ### File Inclusion
-<!-- TODO: Document file inclusion -->
-- `DrGBase.IncludeFile(fileName)` - Include a single file
-- `DrGBase.IncludeFolder(folder)` - Include all files in folder
-- `DrGBase.RecursiveInclude(folder)` - Recursively include folder
+
+Helper functions for including Lua files with proper realm handling (AddCSLuaFile, include).
+
+- `DrGBase.IncludeFile(fileName)` - Include a single file (handles CLIENT/SERVER automatically)
+- `DrGBase.IncludeFolder(folder)` - Include all files in folder (non-recursive)
+- `DrGBase.RecursiveInclude(folder)` - Recursively include folder and subfolders
 
 ### Output
-<!-- TODO: Document output functions -->
-- `DrGBase.Print(msg, options)` - Print formatted message
-- `DrGBase.Info(...)` - Print info message
-- `DrGBase.Error(...)` - Print error message
-- `DrGBase.ErrorInfo(...)` - Print error with info
+
+Formatted console output functions with DrGBase branding and color coding.
+
+- `DrGBase.Print(msg, options)` - Print formatted message with custom colors
+- `DrGBase.Info(...)` - Print info message (white text)
+- `DrGBase.Error(...)` - Print error message (red text)
+- `DrGBase.ErrorInfo(...)` - Print error with additional info
 
 ---
 
