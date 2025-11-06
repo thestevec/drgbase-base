@@ -232,9 +232,24 @@ Fires a projectile.
 **Example:**
 ```lua
 local proj = self:FireProjectile("proj_drg_grenade", self:GetShootPos(), self:GetAimVector():Angle())
+
+-- With options
+local proj = self:FireProjectile("proj_drg_grenade", self:GetShootPos(), self:GetAimVector():Angle(), {
+    velocity = 1000,
+    damage = 100,
+    range = 250,
+    delay = 3
+})
 ```
 
-<!-- TODO: Document options table -->
+**Options Table:**
+- `velocity` (number, optional) - Initial velocity for the projectile
+- `damage` (number, optional) - Damage amount (for grenades)
+- `range` (number, optional) - Explosion range (for grenades)
+- `delay` (number, optional) - Fuse delay (for grenades)
+- `owner` (Entity, optional) - Owner entity (defaults to self)
+
+Note: The specific options available depend on the projectile class being used. Grenade-based projectiles (e.g., "proj_drg_grenade", "proj_drg_flashbang") support damage, range, and delay options.
 
 ---
 

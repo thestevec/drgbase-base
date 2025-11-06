@@ -112,11 +112,26 @@ Sets relationship to a specific entity.
 -- Make NPC like a specific player
 self:SetRelationship(player, D_LI)
 
--- Make NPC hate an entity
+-- Make NPC hate an entity with high priority
 self:SetRelationship(enemy, D_HT, 99)
 ```
 
-<!-- TODO: Document priority system -->
+**Priority System:**
+The priority parameter determines which relationship takes precedence when multiple relationship rules apply to the same entity. Higher priority values override lower ones.
+
+- Default priority: `1`
+- Higher numbers = higher priority
+- When priorities are equal, disposition priority is used: `D_LI (4) > D_FR (3) > D_HT (2) > D_NU (1)`
+- Useful for making specific relationships override general ones
+
+Example:
+```lua
+-- Set all zombies as neutral (priority 1)
+self:SetClassRelationship("npc_zombie", D_NU, 1)
+
+-- Make a specific zombie an enemy (priority 5 overrides class relationship)
+self:SetEntityRelationship(specificZombie, D_HT, 5)
+```
 
 ---
 
@@ -323,36 +338,118 @@ Checks if entity is neutral.
 
 ---
 
-## Damage Tolerance
+## Damage Tolerance System
 
-### ENT:SetDamageTolerance(entity, amount)
+The damage tolerance system automatically changes relationships based on received damage. When a friendly, neutral, or feared entity attacks the NPC, the relationship gradually shifts toward hostility.
 
-Sets how much damage entity can deal before becoming enemy.
+**How It Works:**
+1. Each time an ally/neutral/feared entity damages the NPC, a tolerance counter accumulates
+2. The accumulated tolerance value is used as the priority for an enemy (D_HT) relationship
+3. Once the tolerance exceeds existing relationship priorities, the entity becomes an enemy
 
-**Realm:** 🔴 SERVER
+**Configuration Properties:**
+- `ENT.AllyDamageTolerance` (default: 0.33) - Tolerance increase per damage from allies
+- `ENT.AfraidDamageTolerance` (default: 0.33) - Tolerance increase per damage from feared entities
+- `ENT.NeutralDamageTolerance` (default: 0.33) - Tolerance increase per damage from neutrals
 
-**Parameters:**
-- `entity` (Entity) - Entity
-- `amount` (number) - Damage threshold
+**Example:**
+```lua
+-- NPC tolerates 3 hits from allies before becoming hostile (0.33 * 3 ≈ 1.0 priority)
+ENT.AllyDamageTolerance = 0.33
 
-**Returns:** None
+-- NPC becomes hostile after first hit from neutrals
+ENT.NeutralDamageTolerance = 1.0
 
-**Description:**
-<!-- TODO: Explain damage tolerance system -->
+-- NPC never turns hostile from ally damage
+ENT.AllyDamageTolerance = 0
+```
+
+**Notes:**
+- Tolerance accumulates per entity (tracked separately for each attacker)
+- The tolerance value becomes the priority of the hostile relationship
+- Entities already set as enemies (D_HT) are not affected by this system
+- Tolerance is not reduced over time - it's permanent once accumulated
 
 ---
 
-## Relationship Priority
+## Relationship Priority System
 
-<!-- TODO: Document relationship priority system -->
+The relationship priority system determines which relationship rule applies when multiple rules could affect the same entity. This allows for complex, layered relationship logic.
 
-### Priority Levels
+### How Relationships Are Calculated
 
-1. Entity-specific relationships (highest)
+When determining the relationship to an entity, DrGBase evaluates rules in this order:
+
+1. **Team Relationships** (Absolute Override)
+   - If both NPCs share the same team (via `ENT:SetTeam()`), they're automatically allies (D_LI)
+   - Team relationships cannot be overridden by other rules
+   - Team 0 = no team (normal relationship rules apply)
+
+2. **Relationship Definers** (Priority-Based)
+   The system collects all applicable relationship rules and selects the highest priority one:
+
+   - **Entity-specific** relationships (set via `SetEntityRelationship()`)
+   - **Class-specific** relationships (set via `SetClassRelationship()`)
+   - **Model-specific** relationships (set via `SetModelRelationship()`)
+   - **Faction** relationships (set via `SetFactionRelationship()`)
+   - **Custom** relationships (returned by `CustomRelationship()` hook)
+   - **Default** relationship (`ENT.DefaultRelationship` or D_NU)
+
+3. **Priority Resolution**
+   - Higher priority numbers take precedence (default is 1)
+   - If priorities are equal, disposition priority is used: `D_LI (4) > D_FR (3) > D_HT (2) > D_NU (1)`
+   - All matching faction relationships are considered and the highest priority wins
+
+### Examples
+
+**Example 1: Layered Relationships**
+```lua
+-- Set default: hate all players
+self:SetClassRelationship("player", D_HT, 1)
+
+-- But like players in the "FRIENDLY" faction (higher priority)
+self:SetFactionRelationship("FRIENDLY", D_LI, 2)
+
+-- But hate this specific friendly player (highest priority)
+self:SetEntityRelationship(specificPlayer, D_HT, 10)
+```
+
+**Example 2: Faction Overrides**
+```lua
+-- Hate all Combine
+self:SetFactionRelationship(FACTION_COMBINE, D_HT, 5)
+
+-- Like a specific Combine soldier (higher priority overrides faction rule)
+self:SetEntityRelationship(combineSoldier, D_LI, 10)
+```
+
+**Example 3: Damage Tolerance Changing Relationships**
+```lua
+-- Initially set as ally with priority 5
+self:SetEntityRelationship(friendlyNPC, D_LI, 5)
+
+-- After 15 hits (with AllyDamageTolerance = 0.33):
+-- Accumulated tolerance = 0.33 * 15 = 4.95
+-- This creates a D_HT relationship with priority 4.95
+-- Since 4.95 < 5, the entity remains an ally
+
+-- After 16 hits:
+-- Accumulated tolerance = 0.33 * 16 = 5.28
+-- Since 5.28 > 5, the entity becomes an enemy
+```
+
+### Priority Level Summary
+
+From highest to lowest (when using same priority number):
+
+1. Entity-specific relationships
 2. Class-specific relationships
 3. Model-specific relationships
 4. Faction relationships
-5. Default relationship (lowest)
+5. Custom relationships (hook)
+6. Default relationship
+
+**Note:** In practice, the priority **number** determines precedence, not the type. An entity relationship with priority 1 will be overridden by a faction relationship with priority 5.
 
 ---
 
