@@ -43,16 +43,79 @@ Understanding DrGBase's architecture will help you build better addons and troub
 
 ## Architecture Diagrams
 
-<!-- TODO: Add architecture diagrams -->
-
 ### Component Diagram
-<!-- High-level component relationships -->
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     DrGBase Framework                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │   Autorun   │  │    Core     │  │  Modules    │         │
+│  │  Entry Point│──▶│  Functions  │──▶│  & Utils    │         │
+│  └─────────────┘  └─────────────┘  └─────────────┘         │
+│                                                               │
+│  ┌─────────────────────────────────────────────────┐        │
+│  │           Base Classes (Entities)                │        │
+│  │  ┌──────────────┐  ┌──────────────┐            │        │
+│  │  │  drgbase_    │  │  drgbase_    │            │        │
+│  │  │  nextbot     │  │  weapon      │            │        │
+│  │  └──────────────┘  └──────────────┘            │        │
+│  └─────────────────────────────────────────────────┘        │
+│                         ▲                                     │
+│                         │                                     │
+│  ┌──────────────────────┴────────────────────────┐          │
+│  │        Custom Entities (User Code)             │          │
+│  │  ┌──────────────┐  ┌──────────────┐          │          │
+│  │  │  npc_drg_*   │  │ weapon_drg_* │          │          │
+│  │  └──────────────┘  └──────────────┘          │          │
+│  └─────────────────────────────────────────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ### Data Flow Diagram
-<!-- How data flows through the system -->
+
+```
+  Player Input
+       │
+       ▼
+  ┌─────────┐         ┌──────────┐         ┌─────────┐
+  │ Client  │────────▶│ Network  │────────▶│ Server  │
+  │ (UI)    │◀────────│  Layer   │◀────────│  (AI)   │
+  └─────────┘         └──────────┘         └─────────┘
+       │                                          │
+       ▼                                          ▼
+  Rendering                               Game Logic
+  Prediction                              Physics/AI
+  Sounds                                  Damage/State
+```
 
 ### Class Hierarchy
-<!-- Entity/weapon inheritance structure -->
+
+```
+base_nextbot (Garry's Mod)
+    │
+    ├─▶ drgbase_nextbot (DrGBase Base)
+    │       │
+    │       ├─▶ drgbase_nextbot_human (Humanoid Variant)
+    │       │       └─▶ npc_drg_* (User NPCs)
+    │       │
+    │       └─▶ drgbase_nextbot_sprite (2D Sprite)
+    │               └─▶ npc_drg_testsprite
+    │
+weapon_base (Garry's Mod)
+    │
+    └─▶ drgbase_weapon (DrGBase Base)
+            └─▶ weapon_drg_* (User Weapons)
+
+base_entity (Garry's Mod)
+    │
+    ├─▶ proj_drg_default (DrGBase Projectile)
+    │       └─▶ proj_drg_* (User Projectiles)
+    │
+    └─▶ spwn_drg_default (DrGBase Spawner)
+            └─▶ spwn_drg_* (User Spawners)
+```
 
 ## Quick Reference
 
